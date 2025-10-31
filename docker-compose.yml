@@ -1,0 +1,12 @@
+services:
+  shelflife:
+    build: .
+    container_name: shelflife
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:///./data/shelflife.db
+    restart: unless-stopped
+

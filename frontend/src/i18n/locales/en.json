@@ -1,0 +1,61 @@
+{
+  "app": {
+    "title": "ShelfLife",
+    "tagline": "Keep your Plex libraries clean — automatically, safely, and visibly."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "rules": "Rules",
+    "candidates": "Candidates",
+    "logs": "Logs",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "systemStatus": "System Status",
+    "quickActions": "Quick Actions",
+    "scanAllRules": "Scan All Rules",
+    "statistics": "Statistics"
+  },
+  "rules": {
+    "title": "Rules",
+    "createRule": "Create Rule",
+    "editRule": "Edit Rule",
+    "deleteRule": "Delete Rule",
+    "enableRule": "Enable Rule",
+    "disableRule": "Disable Rule",
+    "scanRule": "Scan Rule",
+    "noRules": "No rules configured",
+    "dryRun": "Dry Run",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
+  },
+  "candidates": {
+    "title": "Candidates",
+    "noCandidates": "No candidates found",
+    "scheduledDate": "Scheduled Date",
+    "reason": "Reason"
+  },
+  "logs": {
+    "title": "Action Logs",
+    "noLogs": "No logs found",
+    "actionType": "Action Type",
+    "status": "Status",
+    "details": "Details"
+  },
+  "settings": {
+    "title": "Settings",
+    "plex": "Plex",
+    "radarr": "Radarr",
+    "sonarr": "Sonarr",
+    "url": "URL",
+    "token": "Token",
+    "apiKey": "API Key",
+    "testConnection": "Test Connection",
+    "language": "Language",
+    "theme": "Theme",
+    "save": "Save",
+    "saved": "Settings saved"
+  }
+}
+

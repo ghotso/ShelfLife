@@ -1,0 +1,61 @@
+{
+  "app": {
+    "title": "ShelfLife",
+    "tagline": "Halte deine Plex-Bibliotheken sauber — automatisch, sicher und sichtbar."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "rules": "Regeln",
+    "candidates": "Kandidaten",
+    "logs": "Protokolle",
+    "settings": "Einstellungen"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "systemStatus": "Systemstatus",
+    "quickActions": "Schnellaktionen",
+    "scanAllRules": "Alle Regeln scannen",
+    "statistics": "Statistiken"
+  },
+  "rules": {
+    "title": "Regeln",
+    "createRule": "Regel erstellen",
+    "editRule": "Regel bearbeiten",
+    "deleteRule": "Regel löschen",
+    "enableRule": "Regel aktivieren",
+    "disableRule": "Regel deaktivieren",
+    "scanRule": "Regel scannen",
+    "noRules": "Keine Regeln konfiguriert",
+    "dryRun": "Probelauf",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert"
+  },
+  "candidates": {
+    "title": "Kandidaten",
+    "noCandidates": "Keine Kandidaten gefunden",
+    "scheduledDate": "Geplantes Datum",
+    "reason": "Grund"
+  },
+  "logs": {
+    "title": "Aktionsprotokolle",
+    "noLogs": "Keine Protokolle gefunden",
+    "actionType": "Aktionstyp",
+    "status": "Status",
+    "details": "Details"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "plex": "Plex",
+    "radarr": "Radarr",
+    "sonarr": "Sonarr",
+    "url": "URL",
+    "token": "Token",
+    "apiKey": "API-Schlüssel",
+    "testConnection": "Verbindung testen",
+    "language": "Sprache",
+    "theme": "Design",
+    "save": "Speichern",
+    "saved": "Einstellungen gespeichert"
+  }
+}
+
