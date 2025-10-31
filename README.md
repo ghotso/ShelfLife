@@ -166,4 +166,3 @@ Comprehensive documentation is available in the [`docs/`](docs/) folder:
 ## Contributing
 
 Contributions are welcome! Please see the [Contributing Guide](docs/CONTRIBUTING.md) for details.
-
