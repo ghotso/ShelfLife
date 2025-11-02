@@ -3,11 +3,11 @@ uvicorn[standard]==0.24.0
 sqlalchemy==2.0.23
 cryptography>=42.0.0
 plexapi==4.15.9
-requests==2.31.0
+requests==2.32.4
 bcrypt==4.1.1
 apscheduler==3.10.4
 pydantic==2.5.0
 pydantic-settings==2.1.0
-python-multipart==0.0.6
+python-multipart==0.0.18
 python-jose[cryptography]==3.3.0
 
