@@ -1,0 +1,58 @@
+# .github/workflows/sync-docs.yml
+name: Sync docs to ShelfLife-Docs
+
+on:
+  push:
+    branches: [ main ]   # läuft bei jedem Push auf main (inkl. gemergte PRs)
+
+concurrency:
+  group: sync-docs
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Quelle auschecken (ShelfLife)
+      - name: Checkout source (ShelfLife)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          path: src
+
+      # 2) Ziel auschecken (ShelfLife-Docs) – mit PAT
+      - name: Checkout target (ShelfLife-Docs)
+        uses: actions/checkout@v4
+        with:
+          repository: ghotso/ShelfLife-Docs
+          fetch-depth: 1
+          path: target
+          token: ${{ secrets.DOCS_PUSH_TOKEN }}   # PAT mit 'repo' Rechten
+
+      # 3) docs/ → target root spiegeln
+      - name: Sync docs → target root
+        run: |
+          # Falls es keine docs/ gibt, abbrechen ohne Fehler
+          if [ ! -d "src/docs" ]; then
+            echo "No src/docs directory; nothing to sync."
+            exit 0
+          fi
+
+          rsync -a --delete --exclude '.git' "src/docs/" "target/"
+
+      # 4) Nur committen, wenn es echte Änderungen gibt
+      - name: Commit & push if changed
+        working-directory: target
+        run: |
+          git config user.name  "docs-sync-bot"
+          git config user.email "actions@github.com"
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Sync docs from ShelfLife (push: $GITHUB_SHA)"
+          git push
