@@ -567,4 +567,4 @@ API versioning is not yet implemented. All endpoints are currently under `/api` 
 
 ---
 
-*Last updated: 31st October 2025*
+*Documentation version: 1.0 | Last updated: 02.11.2025*

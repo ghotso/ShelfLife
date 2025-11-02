@@ -49,5 +49,5 @@ ShelfLife is a self-hosted tool that automatically maintains your Plex libraries
 
 ---
 
-*Documentation version: 1.0 | Last updated: 2025*
+*Documentation version: 1.0 | Last updated: 02.11.2025*
 

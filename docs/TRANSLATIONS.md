@@ -284,5 +284,5 @@ Thank you for helping make ShelfLife accessible to more users! 🌍
 
 ---
 
-*Last updated: 2025*
+*Documentation version: 1.0 | Last updated: 02.11.2025*
 

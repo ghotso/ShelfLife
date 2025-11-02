@@ -473,5 +473,5 @@ For larger scale:
 
 ---
 
-*Last updated: 2025*
+*Documentation version: 1.0 | Last updated: 02.11.2025*
 
