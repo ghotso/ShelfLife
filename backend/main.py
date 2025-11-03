@@ -60,10 +60,27 @@ if os.path.exists(static_dir):
     async def serve_spa(full_path: str):
         if full_path.startswith("api/"):
             return None
+        
+        # Validate and sanitize user input to prevent path traversal
+        # Reject paths containing directory traversal sequences
+        if ".." in full_path or "\\" in full_path:
+            # Invalid path - serve index.html for SPA routing instead
+            index_path = os.path.join(static_dir, "index.html")
+            if os.path.exists(index_path):
+                return FileResponse(index_path)
+            return {"error": "Frontend not found"}
+        
+        # Normalize the path (removes redundant separators and resolves relative paths)
+        # After normalization, ensure it doesn't start with a separator
+        normalized_path = os.path.normpath(full_path)
+        if normalized_path.startswith(os.sep) or normalized_path.startswith("/"):
+            normalized_path = normalized_path.lstrip(os.sep).lstrip("/")
+        
         # Check if it's a file request
-        file_path = os.path.normpath(os.path.join(static_dir, full_path))
+        file_path = os.path.join(static_dir, normalized_path)
         static_dir_abs = os.path.abspath(static_dir)
         file_path_abs = os.path.abspath(file_path)
+        
         # Only serve if the path is contained within static_dir
         # Use commonpath to securely verify file_path_abs is within static_dir_abs
         try:
@@ -75,6 +92,7 @@ if os.path.exists(static_dir):
         if is_within_static_dir:
             if os.path.exists(file_path_abs) and os.path.isfile(file_path_abs):
                 return FileResponse(file_path_abs)
+        
         # Otherwise serve index.html for SPA routing
         index_path = os.path.join(static_dir, "index.html")
         if os.path.exists(index_path):
