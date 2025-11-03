@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
+import re
 
 from app.database import init_db
 from app.routers import settings, libraries, rules, tasks, candidates, logs
@@ -62,7 +63,7 @@ if os.path.exists(static_dir):
             return None
         
         # Validate and sanitize user input to prevent path traversal
-        # Reject paths containing directory traversal sequences
+        # Reject paths containing directory traversal sequences or backslashes
         if ".." in full_path or "\\" in full_path:
             # Invalid path - serve index.html for SPA routing instead
             index_path = os.path.join(static_dir, "index.html")
@@ -70,14 +71,35 @@ if os.path.exists(static_dir):
                 return FileResponse(index_path)
             return {"error": "Frontend not found"}
         
-        # Normalize the path (removes redundant separators and resolves relative paths)
-        # After normalization, ensure it doesn't start with a separator
-        normalized_path = os.path.normpath(full_path)
-        if normalized_path.startswith(os.sep) or normalized_path.startswith("/"):
-            normalized_path = normalized_path.lstrip(os.sep).lstrip("/")
+        # Reject paths starting with absolute path indicators
+        if full_path.startswith("/") or full_path.startswith(os.sep):
+            index_path = os.path.join(static_dir, "index.html")
+            if os.path.exists(index_path):
+                return FileResponse(index_path)
+            return {"error": "Frontend not found"}
+        
+        # Sanitize the path: only allow alphanumeric, forward slashes, dots, hyphens, underscores
+        # This creates an allowlist of safe characters for file paths
+        if not re.match(r'^[a-zA-Z0-9._/-]+$', full_path):
+            index_path = os.path.join(static_dir, "index.html")
+            if os.path.exists(index_path):
+                return FileResponse(index_path)
+            return {"error": "Frontend not found"}
+        
+        # After validation, construct the sanitized path
+        # Split by forward slash and rejoin to ensure no directory traversal
+        path_parts = full_path.split("/")
+        # Filter out empty parts and ensure no component contains dangerous patterns
+        safe_parts = []
+        for part in path_parts:
+            if part and part != "." and part != ".." and "\\" not in part:
+                safe_parts.append(part)
+        
+        # Reconstruct the safe path
+        sanitized_path = "/".join(safe_parts)
         
         # Check if it's a file request
-        file_path = os.path.join(static_dir, normalized_path)
+        file_path = os.path.join(static_dir, sanitized_path)
         static_dir_abs = os.path.abspath(static_dir)
         file_path_abs = os.path.abspath(file_path)
         
