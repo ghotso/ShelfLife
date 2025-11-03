@@ -1,4 +1,6 @@
 name: Sync docs to ShelfLife-Docs
+permissions:
+  contents: read
 
 on:
   push:
