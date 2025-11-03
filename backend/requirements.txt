@@ -10,5 +10,5 @@ pydantic==2.5.0
 pydantic-settings==2.1.0
 python-multipart==0.0.18
 python-jose[cryptography]>=3.4.0
-werkzeug==3.0.1
+werkzeug>=3.0.6
 
