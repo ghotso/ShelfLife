@@ -50,6 +50,57 @@ async def health():
 
 # Serve static files in production
 static_dir = os.path.join(os.path.dirname(__file__), "static")
+
+def sanitize_path_component(component: str) -> str | None:
+    """
+    Sanitize a single path component using an allowlist approach.
+    Returns None if the component is unsafe.
+    """
+    if not component:
+        return None
+    
+    # Reject dangerous patterns
+    if ".." in component or "\\" in component or "/" in component:
+        return None
+    
+    # Allowlist: only alphanumeric, dots, hyphens, and underscores
+    # This allows file extensions but prevents directory traversal
+    if not re.match(r'^[a-zA-Z0-9._-]+$', component):
+        return None
+    
+    # Reject components that are just dots (current/parent directory)
+    if component == "." or component == "..":
+        return None
+    
+    return component
+
+def sanitize_file_path(user_path: str) -> str | None:
+    """
+    Sanitize a file path from user input using an allowlist approach.
+    Returns None if the path is unsafe, otherwise returns a sanitized path.
+    """
+    # Early rejection of obviously dangerous patterns
+    if ".." in user_path or "\\" in user_path:
+        return None
+    
+    # Reject absolute paths
+    if user_path.startswith("/") or user_path.startswith(os.sep):
+        return None
+    
+    # Split into components and validate each one
+    path_parts = user_path.split("/")
+    sanitized_parts = []
+    
+    for part in path_parts:
+        sanitized = sanitize_path_component(part)
+        if sanitized is None:
+            # Invalid component - reject entire path
+            return None
+        sanitized_parts.append(sanitized)
+    
+    # Reconstruct path from validated components
+    return "/".join(sanitized_parts)
+
 if os.path.exists(static_dir):
     # Serve assets
     assets_dir = os.path.join(static_dir, "assets")
@@ -62,43 +113,16 @@ if os.path.exists(static_dir):
         if full_path.startswith("api/"):
             return None
         
-        # Validate and sanitize user input to prevent path traversal
-        # Reject paths containing directory traversal sequences or backslashes
-        if ".." in full_path or "\\" in full_path:
+        # Sanitize user input using allowlist-based validation
+        sanitized_path = sanitize_file_path(full_path)
+        if sanitized_path is None:
             # Invalid path - serve index.html for SPA routing instead
             index_path = os.path.join(static_dir, "index.html")
             if os.path.exists(index_path):
                 return FileResponse(index_path)
             return {"error": "Frontend not found"}
         
-        # Reject paths starting with absolute path indicators
-        if full_path.startswith("/") or full_path.startswith(os.sep):
-            index_path = os.path.join(static_dir, "index.html")
-            if os.path.exists(index_path):
-                return FileResponse(index_path)
-            return {"error": "Frontend not found"}
-        
-        # Sanitize the path: only allow alphanumeric, forward slashes, dots, hyphens, underscores
-        # This creates an allowlist of safe characters for file paths
-        if not re.match(r'^[a-zA-Z0-9._/-]+$', full_path):
-            index_path = os.path.join(static_dir, "index.html")
-            if os.path.exists(index_path):
-                return FileResponse(index_path)
-            return {"error": "Frontend not found"}
-        
-        # After validation, construct the sanitized path
-        # Split by forward slash and rejoin to ensure no directory traversal
-        path_parts = full_path.split("/")
-        # Filter out empty parts and ensure no component contains dangerous patterns
-        safe_parts = []
-        for part in path_parts:
-            if part and part != "." and part != ".." and "\\" not in part:
-                safe_parts.append(part)
-        
-        # Reconstruct the safe path
-        sanitized_path = "/".join(safe_parts)
-        
-        # Check if it's a file request
+        # Check if it's a file request using the sanitized path
         file_path = os.path.join(static_dir, sanitized_path)
         static_dir_abs = os.path.abspath(static_dir)
         file_path_abs = os.path.abspath(file_path)
