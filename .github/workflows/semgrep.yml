@@ -18,17 +18,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Option A: per pip installieren (kein Docker nötig)
-      - uses: actions/setup-python@v5
+      - uses: returntocorp/semgrep-action@v1
         with:
-          python-version: "3.x"
-
-      - name: Install Semgrep
-        run: pip install --upgrade semgrep
-
-      - name: Run Semgrep and produce SARIF
-        # --sarif schreibt SARIF auf STDOUT; wir leiten in eine Datei um
-        run: semgrep ci --sarif > semgrep.sarif
+          # Wichtig: Mehrzeilig als Block (|) – das ist ein *einziger* String.
+          config: |
+            p/javascript
+            p/typescript
+            p/react
+            p/nodejsscan
+          generateSarif: true
+          output: semgrep.sarif
 
       - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
