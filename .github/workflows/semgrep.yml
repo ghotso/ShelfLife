@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '0 9 * * 3'  # Mittwochs 09:00 UTC
+    - cron: '0 9 * * 3'
 
 jobs:
   semgrep:
@@ -20,13 +20,13 @@ jobs:
 
       - uses: returntocorp/semgrep-action@v1
         with:
-          # Standard-Regeln für JS/TS/React/Node
           config: >-
             p/javascript
             p/typescript
             p/react
             p/nodejsscan
           generateSarif: true
+          output: semgrep.sarif
 
       - uses: github/codeql-action/upload-sarif@v3
         with:
