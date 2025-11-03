@@ -61,9 +61,13 @@ if os.path.exists(static_dir):
         if full_path.startswith("api/"):
             return None
         # Check if it's a file request
-        file_path = os.path.join(static_dir, full_path)
-        if os.path.exists(file_path) and os.path.isfile(file_path):
-            return FileResponse(file_path)
+        file_path = os.path.normpath(os.path.join(static_dir, full_path))
+        static_dir_abs = os.path.abspath(static_dir)
+        file_path_abs = os.path.abspath(file_path)
+        # Only serve if the path is contained within static_dir
+        if file_path_abs.startswith(static_dir_abs + os.sep) or file_path_abs == static_dir_abs:
+            if os.path.exists(file_path_abs) and os.path.isfile(file_path_abs):
+                return FileResponse(file_path_abs)
         # Otherwise serve index.html for SPA routing
         index_path = os.path.join(static_dir, "index.html")
         if os.path.exists(index_path):
