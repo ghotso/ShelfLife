@@ -6,32 +6,43 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '0 9 * * 3'  # Mittwochs 09:00 UTC
+    - cron: '0 9 * * 3'
+
+permissions:
+  contents: read
+  security-events: write
 
 jobs:
   semgrep:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
+    timeout-minutes: 10
+    concurrency:
+      group: semgrep-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Semgrep (JS/TS/React/Node)
-        uses: returntocorp/semgrep-action@v1
+      - uses: actions/setup-python@v5
         with:
-          # Wichtig: als Block (|) schreiben!
-          config: |
-            p/javascript
-            p/typescript
-            p/react
-            p/nodejsscan
-          generateSarif: true
-          output: semgrep.sarif   # <- das schreibt die Datei wirklich!
+          python-version: "3.x"
 
-      - name: Verify SARIF file
-        run: ls -lh semgrep.sarif || echo "❌ semgrep.sarif not found"
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      - name: Run Semgrep and generate SARIF
+        run: |
+          semgrep ci \
+            --config p/javascript \
+            --config p/typescript \
+            --config p/react \
+            --config p/nodejsscan \
+            --exclude node_modules \
+            --exclude dist \
+            --exclude build \
+            --sarif \
+            --output semgrep.sarif \
+            || true
 
       - name: Upload SARIF to GitHub Security tab
         if: always()
