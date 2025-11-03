@@ -66,7 +66,13 @@ if os.path.exists(static_dir):
         file_path_abs = os.path.abspath(file_path)
         # Only serve if the path is contained within static_dir
         # Use commonpath to securely verify file_path_abs is within static_dir_abs
-        if os.path.commonpath([file_path_abs, static_dir_abs]) == static_dir_abs:
+        try:
+            is_within_static_dir = os.path.commonpath([file_path_abs, static_dir_abs]) == static_dir_abs
+        except ValueError:
+            # Different drives on Windows cause ValueError; treat as outside static dir
+            is_within_static_dir = False
+
+        if is_within_static_dir:
             if os.path.exists(file_path_abs) and os.path.isfile(file_path_abs):
                 return FileResponse(file_path_abs)
         # Otherwise serve index.html for SPA routing
@@ -78,4 +84,3 @@ if os.path.exists(static_dir):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
