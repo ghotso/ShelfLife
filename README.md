@@ -59,6 +59,19 @@ pip install -r requirements.txt
 python main.py
 ```
 
+Optional environment variables for manual runs:
+- `UVICORN_HOST` (default `127.0.0.1`)
+- `UVICORN_PORT` (default `8000`)
+
+For example, to expose the API externally while developing:
+```bash
+export UVICORN_HOST=0.0.0.0
+export UVICORN_PORT=8080
+python main.py
+```
+
+Docker deployments typically set these automatically, so most container users don't need to configure them manually.
+
 #### Frontend
 
 1. Install Node.js dependencies:
