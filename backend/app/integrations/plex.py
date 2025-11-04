@@ -519,8 +519,8 @@ class PlexIntegration:
                                     item_show = item.show()
                                     if hasattr(item_show, "key") and item_show.key == show_key:
                                         seasons_to_remove.append(item)
-                                except Exception:
-                                    pass
+                                except Exception as err:
+                                    print(f"  DEBUG: Skipping season in collection '{collection_name}' due to show lookup error: {err}")
                         
                         # Remove seasons from this show before adding the show
                         if seasons_to_remove:
