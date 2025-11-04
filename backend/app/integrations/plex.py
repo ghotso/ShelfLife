@@ -2,7 +2,7 @@
 Plex integration using plexapi
 """
 from plexapi.server import PlexServer
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest, NotFound, PlexApiException
 from typing import List, Dict, Optional, Any
 from datetime import datetime, timedelta
 
@@ -135,7 +135,7 @@ class PlexIntegration:
                         last_played = value
                         print(f"  DEBUG: Found last viewed date for '{movie.title}' via {attr}: {last_played}")
                         break
-                except Exception:
+                except (AttributeError, PlexApiException, TypeError, ValueError):
                     continue
         
         # If still not found, try reloading the movie to get full metadata
@@ -152,7 +152,7 @@ class PlexIntegration:
                                 last_played = value
                                 print(f"  DEBUG: Found last viewed date after reload for '{movie.title}' via {attr}: {last_played}")
                                 break
-                        except Exception:
+                        except (AttributeError, PlexApiException, TypeError, ValueError):
                             continue
             except Exception as e:
                 print(f"  DEBUG: Could not reload movie '{movie.title}': {e}")
