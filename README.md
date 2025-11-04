@@ -132,7 +132,7 @@ Use the search and filter tools to quickly find specific candidates or review it
 
 ## License
 
-[Add your license here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Troubleshooting
 
