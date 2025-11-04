@@ -334,25 +334,47 @@ class PlexIntegration:
                             f"(S{getattr(season, 'index', '?')}E{getattr(episode, 'index', '?')}): {error}"
                         )
                 
-                # Calculate days if we found a watch time
-                if ep_time:
-                    # Convert to datetime if needed
-                    ep_datetime = None
-                    if isinstance(ep_time, datetime):
-                        ep_datetime = ep_time
-                        delta = datetime.now() - ep_time
-                    elif isinstance(ep_time, (int, float)):
-                        ep_datetime = datetime.fromtimestamp(ep_time)
-                        delta = datetime.now() - ep_datetime
-                    else:
-                        try:
-                            # Try parsing as string
-                            if isinstance(ep_time, str):
+                    # Calculate days if we found a watch time
+                    if ep_time:
+                        # Convert to datetime if needed
+                        ep_datetime = None
+                        delta = None
+
+                        if isinstance(ep_time, datetime):
+                            ep_datetime = ep_time
+                            delta = datetime.now() - ep_time
+                        elif isinstance(ep_time, (int, float)):
+                            ep_datetime = datetime.fromtimestamp(ep_time)
+                            delta = datetime.now() - ep_datetime
+                        elif isinstance(ep_time, str):
+                            try:
+                                # Try parsing as string
                                 ep_datetime = datetime.fromisoformat(ep_time.replace('Z', '+00:00')).replace(tzinfo=None)
                                 delta = datetime.now() - ep_datetime
-                            else:
-                                continue
-                        except Exception:
+                            except (TypeError, ValueError) as error:
+                                episode_title = getattr(episode, "title", "Unknown")
+                                print(
+                                    "  DEBUG: Failed to parse episode time '%s' for episode '%s' (S%sE%s): %s"
+                                    % (
+                                        ep_time,
+                                        episode_title,
+                                        getattr(season, "index", "?"),
+                                        getattr(episode, "index", "?"),
+                                        error,
+                                    )
+                                )
+                        else:
+                            print(
+                                "  DEBUG: Unsupported episode time type '%s' for episode '%s' (S%sE%s)"
+                                % (
+                                    type(ep_time).__name__,
+                                    getattr(episode, "title", "Unknown"),
+                                    getattr(season, "index", "?"),
+                                    getattr(episode, "index", "?"),
+                                )
+                            )
+
+                        if delta is None:
                             continue
                     
                     days = delta.days
