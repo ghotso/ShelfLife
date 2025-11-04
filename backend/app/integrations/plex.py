@@ -2,7 +2,7 @@
 Plex integration using plexapi
 """
 from plexapi.server import PlexServer
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest, NotFound, PlexApiException
 from typing import List, Dict, Optional, Any
 from datetime import datetime, timedelta
 
@@ -135,7 +135,7 @@ class PlexIntegration:
                         last_played = value
                         print(f"  DEBUG: Found last viewed date for '{movie.title}' via {attr}: {last_played}")
                         break
-                except Exception:
+                except (AttributeError, PlexApiException, TypeError, ValueError):
                     continue
         
         # If still not found, try reloading the movie to get full metadata
@@ -152,7 +152,7 @@ class PlexIntegration:
                                 last_played = value
                                 print(f"  DEBUG: Found last viewed date after reload for '{movie.title}' via {attr}: {last_played}")
                                 break
-                        except Exception:
+                        except (AttributeError, PlexApiException, TypeError, ValueError):
                             continue
             except Exception as e:
                 print(f"  DEBUG: Could not reload movie '{movie.title}': {e}")
@@ -316,36 +316,65 @@ class PlexIntegration:
                 # First try to get from episode object directly
                 if hasattr(episode, "lastViewedAt") and episode.lastViewedAt:
                     ep_time = episode.lastViewedAt
-                
+
                 # If not found, try history cache by ratingKey
                 if not ep_time:
                     try:
                         rating_key = str(getattr(episode, "ratingKey", None))
                         if rating_key and rating_key in history_cache:
                             ep_time = history_cache[rating_key]
-                            print(f"  DEBUG: Found watch date for episode '{episode.title}' (S{season.index}E{episode.index}) from history cache: {ep_time}")
-                    except Exception:
-                        pass
+                            print(
+                                f"  DEBUG: Found watch date for episode '{episode.title}' "
+                                f"(S{season.index}E{episode.index}) from history cache: {ep_time}"
+                            )
+                    except (TypeError, AttributeError) as error:
+                        episode_title = getattr(episode, "title", "Unknown")
+                        print(
+                            f"  DEBUG: Error accessing history cache for episode '{episode_title}' "
+                            f"(S{getattr(season, 'index', '?')}E{getattr(episode, 'index', '?')}): {error}"
+                        )
                 
-                # Calculate days if we found a watch time
-                if ep_time:
-                    # Convert to datetime if needed
-                    ep_datetime = None
-                    if isinstance(ep_time, datetime):
-                        ep_datetime = ep_time
-                        delta = datetime.now() - ep_time
-                    elif isinstance(ep_time, (int, float)):
-                        ep_datetime = datetime.fromtimestamp(ep_time)
-                        delta = datetime.now() - ep_datetime
-                    else:
-                        try:
-                            # Try parsing as string
-                            if isinstance(ep_time, str):
+                    # Calculate days if we found a watch time
+                    if ep_time:
+                        # Convert to datetime if needed
+                        ep_datetime = None
+                        delta = None
+
+                        if isinstance(ep_time, datetime):
+                            ep_datetime = ep_time
+                            delta = datetime.now() - ep_time
+                        elif isinstance(ep_time, (int, float)):
+                            ep_datetime = datetime.fromtimestamp(ep_time)
+                            delta = datetime.now() - ep_datetime
+                        elif isinstance(ep_time, str):
+                            try:
+                                # Try parsing as string
                                 ep_datetime = datetime.fromisoformat(ep_time.replace('Z', '+00:00')).replace(tzinfo=None)
                                 delta = datetime.now() - ep_datetime
-                            else:
-                                continue
-                        except Exception:
+                            except (TypeError, ValueError) as error:
+                                episode_title = getattr(episode, "title", "Unknown")
+                                print(
+                                    "  DEBUG: Failed to parse episode time '%s' for episode '%s' (S%sE%s): %s"
+                                    % (
+                                        ep_time,
+                                        episode_title,
+                                        getattr(season, "index", "?"),
+                                        getattr(episode, "index", "?"),
+                                        error,
+                                    )
+                                )
+                        else:
+                            print(
+                                "  DEBUG: Unsupported episode time type '%s' for episode '%s' (S%sE%s)"
+                                % (
+                                    type(ep_time).__name__,
+                                    getattr(episode, "title", "Unknown"),
+                                    getattr(season, "index", "?"),
+                                    getattr(episode, "index", "?"),
+                                )
+                            )
+
+                        if delta is None:
                             continue
                     
                     days = delta.days
@@ -490,8 +519,8 @@ class PlexIntegration:
                                     item_show = item.show()
                                     if hasattr(item_show, "key") and item_show.key == show_key:
                                         seasons_to_remove.append(item)
-                                except Exception:
-                                    pass
+                                except Exception as err:
+                                    print(f"  DEBUG: Skipping season in collection '{collection_name}' due to show lookup error: {err}")
                         
                         # Remove seasons from this show before adding the show
                         if seasons_to_remove:
