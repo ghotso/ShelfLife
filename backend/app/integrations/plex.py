@@ -316,16 +316,23 @@ class PlexIntegration:
                 # First try to get from episode object directly
                 if hasattr(episode, "lastViewedAt") and episode.lastViewedAt:
                     ep_time = episode.lastViewedAt
-                
+
                 # If not found, try history cache by ratingKey
                 if not ep_time:
                     try:
                         rating_key = str(getattr(episode, "ratingKey", None))
                         if rating_key and rating_key in history_cache:
                             ep_time = history_cache[rating_key]
-                            print(f"  DEBUG: Found watch date for episode '{episode.title}' (S{season.index}E{episode.index}) from history cache: {ep_time}")
-                    except Exception:
-                        pass
+                            print(
+                                f"  DEBUG: Found watch date for episode '{episode.title}' "
+                                f"(S{season.index}E{episode.index}) from history cache: {ep_time}"
+                            )
+                    except (TypeError, AttributeError) as error:
+                        episode_title = getattr(episode, "title", "Unknown")
+                        print(
+                            f"  DEBUG: Error accessing history cache for episode '{episode_title}' "
+                            f"(S{getattr(season, 'index', '?')}E{getattr(episode, 'index', '?')}): {error}"
+                        )
                 
                 # Calculate days if we found a watch time
                 if ep_time:
