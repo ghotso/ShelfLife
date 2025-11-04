@@ -33,5 +33,7 @@ RUN mkdir -p /app/data
 EXPOSE 8000
 
 # Run the application
+RUN useradd -U -u 1000 appuser && \
+    chown -R 1000:1000 /app
+USER 1000
 CMD ["python", "main.py"]
-
